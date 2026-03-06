@@ -49,6 +49,9 @@
 
 :root {
   --radius: 0.625rem;
+  --reveal-distance: 22px;
+  --reveal-duration: 620ms;
+  --reveal-easing: cubic-bezier(0.22, 0.61, 0.36, 1);
   --background: oklch(1 0 0);
   --foreground: oklch(0.145 0 0);
   --card: oklch(1 0 0);
@@ -116,11 +119,107 @@
   --sidebar-ring: oklch(0.556 0 0);
 }
 
+html[data-motion="subtle"] {
+  --reveal-distance: 10px;
+  --reveal-duration: 520ms;
+}
+
+html[data-motion="strong"] {
+  --reveal-distance: 30px;
+  --reveal-duration: 760ms;
+}
+
 @layer base {
   * {
     @apply border-border outline-ring/50;
   }
   body {
     @apply bg-background text-foreground;
+  }
+}
+
+@keyframes drift {
+  0% {
+    transform: translate3d(0, 0, 0) scale(1);
+  }
+  50% {
+    transform: translate3d(0, 16px, 0) scale(1.05);
+  }
+  100% {
+    transform: translate3d(0, 0, 0) scale(1);
+  }
+}
+
+@keyframes drift-reverse {
+  0% {
+    transform: translate3d(0, 0, 0) scale(1);
+  }
+  50% {
+    transform: translate3d(0, -18px, 0) scale(0.97);
+  }
+  100% {
+    transform: translate3d(0, 0, 0) scale(1);
+  }
+}
+
+@keyframes language-flash {
+  0% {
+    opacity: 0;
+    transform: translate3d(0, -10px, 0) scale(0.96);
+  }
+  22% {
+    opacity: 1;
+    transform: translate3d(0, 0, 0) scale(1);
+  }
+  72% {
+    opacity: 1;
+    transform: translate3d(0, 0, 0) scale(1);
+  }
+  100% {
+    opacity: 0;
+    transform: translate3d(0, -8px, 0) scale(0.98);
+  }
+}
+
+@layer utilities {
+  .animate-drift-slow {
+    animation: drift 20s ease-in-out infinite;
+  }
+
+  .animate-drift-reverse {
+    animation: drift-reverse 24s ease-in-out infinite;
+  }
+
+  .animate-language-flash {
+    animation: language-flash 860ms ease;
+  }
+
+  .reveal-in {
+    opacity: 0;
+    transform: translate3d(0, var(--reveal-distance), 0);
+    transition-property: opacity, transform;
+    transition-duration: var(--reveal-duration);
+    transition-timing-function: var(--reveal-easing);
+    will-change: opacity, transform;
+  }
+
+  .reveal-visible {
+    opacity: 1;
+    transform: translate3d(0, 0, 0);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .animate-drift-slow,
+  .animate-drift-reverse,
+  .animate-language-flash {
+    animation: none;
+  }
+
+  .reveal-in,
+  .reveal-visible {
+    opacity: 1;
+    transform: none;
+    transition: none;
   }
 }

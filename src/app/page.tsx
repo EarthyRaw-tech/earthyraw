@@ -1,10 +1,19 @@
 import type { Metadata } from "next";
-import { RawClonePage } from "@/components/raw-clone-page";
-import { getPageBundle, getPageMetadata } from "@/lib/page-content";
+import { HomePageContent } from "@/components/pages/home-page-content";
+import { homePage } from "@/lib/site-content";
+import { getSiteSettings } from "@/lib/site-settings/store";
 
-export const metadata: Metadata = getPageMetadata("home");
+export const dynamic = "force-dynamic";
 
-export default function HomePage() {
-  const page = getPageBundle("home");
-  return <RawClonePage html={page.html} css={page.css} />;
+export async function generateMetadata(): Promise<Metadata> {
+  const siteSettings = await getSiteSettings();
+  return {
+    title: siteSettings.seo.defaultTitle.trim() || homePage.seoTitle,
+    description: siteSettings.seo.defaultDescription.trim() || homePage.metaDescription,
+  };
+}
+
+export default async function HomePage() {
+  const siteSettings = await getSiteSettings();
+  return <HomePageContent siteSettings={siteSettings} />;
 }
