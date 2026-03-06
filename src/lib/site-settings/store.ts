@@ -10,6 +10,7 @@ import {
 
 const SITE_SETTINGS_FILE = join(process.cwd(), "data", "site-settings.json");
 // Temporary file-based persistence layer. Replace with a DB adapter when ready.
+let hasWarnedReadOnlyStorage = false;
 
 function mergeSiteSettings(base: SiteSettings, patch: SiteSettingsPatch): SiteSettings {
   return {
@@ -47,7 +48,15 @@ export async function getSiteSettings(): Promise<SiteSettings> {
     const normalized = siteSettingsSchema.parse(merged);
     return normalized;
   } catch {
-    await writeSettingsFile(defaultSiteSettings);
+    if (!hasWarnedReadOnlyStorage) {
+      try {
+        await writeSettingsFile(defaultSiteSettings);
+      } catch (error) {
+        // On read-only filesystems (common in some deployments), fallback to defaults.
+        hasWarnedReadOnlyStorage = true;
+        console.warn("Could not initialize site-settings.json. Using defaults.", error);
+      }
+    }
     return defaultSiteSettings;
   }
 }
