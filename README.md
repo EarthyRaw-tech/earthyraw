@@ -43,6 +43,7 @@ npm run backfill:supabase
   - Site settings are read/written from `public.site_settings`.
   - Lead submissions are stored in `public.lead_submissions`.
   - Settings history snapshots are inserted into `public.site_settings_history`.
+  - Contact form rate limiting is enforced through `public.contact_rate_limits` + `increment_contact_rate_limit`.
 - If Supabase is not configured:
   - App falls back to local files in `data/` for development compatibility.
 - If `BLOB_READ_WRITE_TOKEN` is configured:
@@ -51,8 +52,8 @@ npm run backfill:supabase
 
 ## Main env vars
 
-- `ADMIN_PASSWORD`
-- `ADMIN_SESSION_SECRET`
+- `ADMIN_PASSWORD` (required, no default fallback)
+- `ADMIN_SESSION_SECRET` (required, no default fallback)
 - `SMTP_HOST`
 - `SMTP_PORT`
 - `SMTP_SECURE`

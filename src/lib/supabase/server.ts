@@ -115,7 +115,20 @@ export type SupabaseDatabase = {
       };
     };
     Views: Record<string, never>;
-    Functions: Record<string, never>;
+    Functions: {
+      increment_contact_rate_limit: {
+        Args: {
+          p_key: string;
+          p_window_seconds: number;
+          p_limit: number;
+        };
+        Returns: {
+          allowed: boolean;
+          current_count: number;
+          retry_after_seconds: number;
+        }[];
+      };
+    };
     Enums: Record<string, never>;
     CompositeTypes: Record<string, never>;
   };

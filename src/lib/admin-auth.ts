@@ -18,32 +18,40 @@ function fromBase64Url(input: string) {
   return Buffer.from(input, "base64url").toString("utf8");
 }
 
-function getRequiredAdminEnv(name: "ADMIN_SESSION_SECRET" | "ADMIN_PASSWORD", fallback: string) {
-  const value = process.env[name];
+function getAdminEnv(name: "ADMIN_SESSION_SECRET" | "ADMIN_PASSWORD") {
+  const value = process.env[name]?.trim();
   if (value && value.length > 0) {
     return value;
   }
 
-  if (process.env.NODE_ENV === "production") {
-    throw new Error(`${name} is required in production.`);
-  }
+  return null;
+}
 
-  return fallback;
+export function isAdminAuthConfigured() {
+  return Boolean(getAdminEnv("ADMIN_PASSWORD") && getAdminEnv("ADMIN_SESSION_SECRET"));
 }
 
 function getSessionSecret() {
-  return getRequiredAdminEnv(
-    "ADMIN_SESSION_SECRET",
-    "earthyraw-dev-session-secret",
-  );
+  return getAdminEnv("ADMIN_SESSION_SECRET");
 }
 
 export function getAdminPassword() {
-  return getRequiredAdminEnv("ADMIN_PASSWORD", "admin123");
+  const password = getAdminEnv("ADMIN_PASSWORD");
+  if (!password) {
+    throw new Error("ADMIN_PASSWORD is required.");
+  }
+  return password;
 }
 
 function sign(value: string) {
-  return createHmac("sha256", getSessionSecret()).update(value).digest("base64url");
+  const sessionSecret = getSessionSecret();
+  if (!sessionSecret) {
+    return null;
+  }
+
+  return createHmac("sha256", sessionSecret)
+    .update(value)
+    .digest("base64url");
 }
 
 function encodePayload(payload: AdminSessionPayload) {
@@ -70,12 +78,19 @@ export function createAdminSessionToken(now = Date.now()): string {
 
   const payloadSegment = encodePayload(payload);
   const signatureSegment = sign(payloadSegment);
+  if (!signatureSegment) {
+    throw new Error("ADMIN_SESSION_SECRET is required.");
+  }
   return `${payloadSegment}.${signatureSegment}`;
 }
 
 export function isAdminPasswordValid(password: string) {
   if (!password) return false;
-  return password === getAdminPassword();
+  const configuredPassword = getAdminEnv("ADMIN_PASSWORD");
+  if (!configuredPassword) {
+    return false;
+  }
+  return password === configuredPassword;
 }
 
 export function isAdminSessionTokenValid(token: string | undefined): boolean {
@@ -84,6 +99,7 @@ export function isAdminSessionTokenValid(token: string | undefined): boolean {
   if (!payloadSegment || !signatureSegment) return false;
 
   const expectedSignature = sign(payloadSegment);
+  if (!expectedSignature) return false;
   const providedBuffer = Buffer.from(signatureSegment);
   const expectedBuffer = Buffer.from(expectedSignature);
   if (providedBuffer.length !== expectedBuffer.length) return false;

@@ -4,6 +4,7 @@ import {
   ADMIN_SESSION_COOKIE,
   ADMIN_SESSION_MAX_AGE_SECONDS,
   createAdminSessionToken,
+  isAdminAuthConfigured,
   isAdminPasswordValid,
 } from "@/lib/admin-auth";
 
@@ -20,6 +21,13 @@ export async function POST(request: NextRequest) {
     return NextResponse.json(
       { ok: false, error: "Invalid request payload." },
       { status: 400 },
+    );
+  }
+
+  if (!isAdminAuthConfigured()) {
+    return NextResponse.json(
+      { ok: false, error: "Admin authentication is not configured." },
+      { status: 500 },
     );
   }
 
