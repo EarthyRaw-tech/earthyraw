@@ -1,16 +1,70 @@
-# React + Vite
+# Earthy Raw Website
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+Next.js App Router project with a public marketing site, contact request handling, and protected admin pages for settings and lead management.
 
-Currently, two official plugins are available:
+## Stack
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Babel](https://babeljs.io/) (or [oxc](https://oxc.rs) when used in [rolldown-vite](https://vite.dev/guide/rolldown)) for Fast Refresh
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/) for Fast Refresh
+- Next.js 16 (App Router)
+- React 19 + TypeScript
+- Tailwind CSS + shadcn/ui components
+- react-icons
+- next-themes
+- Supabase (primary persistence)
+- Vercel Blob (JSON snapshot backups)
+- Nodemailer (SMTP emails)
 
-## React Compiler
+## Local setup
 
-The React Compiler is not enabled on this template because of its impact on dev & build performances. To add it, see [this documentation](https://react.dev/learn/react-compiler/installation).
+1. Install dependencies:
 
-## Expanding the ESLint configuration
+```bash
+npm install
+```
 
-If you are developing a production application, we recommend using TypeScript with type-aware lint rules enabled. Check out the [TS template](https://github.com/vitejs/vite/tree/main/packages/create-vite/template-react-ts) for information on how to integrate TypeScript and [`typescript-eslint`](https://typescript-eslint.io) in your project.
+2. Create `.env.local` from `.env.example` and set values.
+
+3. Optional but recommended: run [`supabase/schema.sql`](./supabase/schema.sql) in your Supabase SQL editor.
+
+4. Start development:
+
+```bash
+npm run dev
+```
+
+5. Optional one-time migration of existing local data:
+
+```bash
+npm run backfill:supabase
+```
+
+## Data storage behavior
+
+- If `SUPABASE_URL` + `SUPABASE_SERVICE_ROLE_KEY` are configured:
+  - Site settings are read/written from `public.site_settings`.
+  - Lead submissions are stored in `public.lead_submissions`.
+  - Settings history snapshots are inserted into `public.site_settings_history`.
+- If Supabase is not configured:
+  - App falls back to local files in `data/` for development compatibility.
+- If `BLOB_READ_WRITE_TOKEN` is configured:
+  - JSON snapshots are saved to Vercel Blob under `site-backups/...`.
+  - Admin media uploads (logo/favicon/OG/homepage background) are stored in Blob and URLs are saved in settings.
+
+## Main env vars
+
+- `ADMIN_PASSWORD`
+- `ADMIN_SESSION_SECRET`
+- `SMTP_HOST`
+- `SMTP_PORT`
+- `SMTP_SECURE`
+- `SMTP_USER`
+- `SMTP_PASS`
+- `SMTP_FROM`
+- `SUPABASE_URL`
+- `SUPABASE_SERVICE_ROLE_KEY`
+- `BLOB_READ_WRITE_TOKEN`
+
+## Admin routes
+
+- `/admin/login`
+- `/admin/settings`
+- `/admin/leads`

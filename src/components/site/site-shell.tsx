@@ -1,8 +1,17 @@
 ﻿"use client";
 
 import Link from "next/link";
-import type { ComponentType, ReactNode } from "react";
-import { FiArrowRight, FiBriefcase, FiChevronDown, FiMail, FiMapPin, FiPhone } from "react-icons/fi";
+import { useState, type ComponentType, type ReactNode } from "react";
+import {
+  FiArrowRight,
+  FiBriefcase,
+  FiChevronDown,
+  FiMail,
+  FiMapPin,
+  FiMenu,
+  FiPhone,
+  FiX,
+} from "react-icons/fi";
 import {
   FaFacebookF,
   FaInstagram,
@@ -78,6 +87,8 @@ export function SiteShell({ children, active, siteSettings }: SiteShellProps) {
   const copy = uiCopy[language];
   const ServicesIcon = navIcons.services;
   const { services } = getLocalizedContent(language);
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const [mobileServicesOpen, setMobileServicesOpen] = useState(false);
   const siteName = siteSettings.general.siteName.trim() || "Earthy Raw Technologies";
   const companyName = siteSettings.general.companyName.trim() || siteName;
   const footerText = siteSettings.footer.footerText.trim() || copy.sections.footerTagline;
@@ -126,7 +137,7 @@ export function SiteShell({ children, active, siteSettings }: SiteShellProps) {
 
       <header className="sticky top-0 z-30 border-b border-cyan-100/80 bg-white/62 backdrop-blur-md dark:border-cyan-900/50 dark:bg-slate-950/62">
         <div className="mx-auto flex w-full max-w-6xl flex-col gap-4 px-4 py-4 md:px-6">
-          <div className="flex flex-wrap items-center justify-between gap-3">
+          <div className="flex items-center justify-between gap-3">
             <Link
               href="/"
               className="inline-flex items-center gap-2 text-sm font-semibold tracking-wide text-cyan-900 dark:text-cyan-200"
@@ -134,18 +145,28 @@ export function SiteShell({ children, active, siteSettings }: SiteShellProps) {
               <FiBriefcase className="size-4" />
               {siteName}
             </Link>
-            <div className="flex flex-wrap items-center gap-2">
+            <div className="flex items-center gap-2">
               <SiteControls />
-              <Button asChild size="sm" className="gap-2">
+              <Button asChild size="sm" className="hidden gap-2 md:inline-flex">
                 <Link href={ctaHref}>
                   {ctaText}
                   <FiArrowRight className="size-4" />
                 </Link>
               </Button>
+              <Button
+                type="button"
+                size="sm"
+                variant="outline"
+                className="md:hidden"
+                onClick={() => setMobileMenuOpen((current) => !current)}
+                aria-label={mobileMenuOpen ? "Close menu" : "Open menu"}
+              >
+                {mobileMenuOpen ? <FiX className="size-4" /> : <FiMenu className="size-4" />}
+              </Button>
             </div>
           </div>
 
-          <nav className="flex flex-wrap items-center gap-2">
+          <nav className="hidden flex-wrap items-center gap-2 md:flex">
             <details className="relative">
               <summary
                 className={cn(
@@ -202,6 +223,117 @@ export function SiteShell({ children, active, siteSettings }: SiteShellProps) {
           </nav>
         </div>
       </header>
+
+      {mobileMenuOpen ? (
+        <div className="fixed inset-0 z-40 md:hidden">
+          <button
+            type="button"
+            className="absolute inset-0 bg-slate-950/60"
+            onClick={() => setMobileMenuOpen(false)}
+            aria-label="Close mobile menu"
+          />
+          <aside className="absolute right-0 top-0 h-full w-[86%] max-w-[340px] overflow-y-auto border-l border-slate-700 bg-slate-950/95 p-4 text-slate-100 backdrop-blur-md">
+            <div className="mb-3 flex items-center justify-between">
+              <p className="text-sm font-semibold tracking-wide text-cyan-200">
+                {siteName}
+              </p>
+              <Button
+                type="button"
+                size="sm"
+                variant="ghost"
+                onClick={() => setMobileMenuOpen(false)}
+                aria-label="Close"
+              >
+                <FiX className="size-4" />
+              </Button>
+            </div>
+
+            <Button asChild size="sm" className="mb-3 w-full gap-2">
+              <Link href={ctaHref} onClick={() => setMobileMenuOpen(false)}>
+                {ctaText}
+                <FiArrowRight className="size-4" />
+              </Link>
+            </Button>
+
+            <div className="grid gap-1">
+              <Link
+                href="/"
+                onClick={() => setMobileMenuOpen(false)}
+                className={cn(
+                  "rounded-md px-3 py-2 text-sm font-medium transition",
+                  active === "home"
+                    ? "bg-cyan-700 text-cyan-50"
+                    : "text-slate-200 hover:bg-slate-800",
+                )}
+              >
+                {copy.nav.home}
+              </Link>
+
+              <button
+                type="button"
+                onClick={() => setMobileServicesOpen((current) => !current)}
+                className={cn(
+                  "inline-flex items-center justify-between rounded-md px-3 py-2 text-left text-sm font-medium transition",
+                  active === "services"
+                    ? "bg-cyan-700 text-cyan-50"
+                    : "text-slate-200 hover:bg-slate-800",
+                )}
+              >
+                <span className="inline-flex items-center gap-2">
+                  <ServicesIcon className="size-4 shrink-0" />
+                  {copy.nav.services}
+                </span>
+                <FiChevronDown
+                  className={cn(
+                    "size-4 transition-transform",
+                    mobileServicesOpen ? "rotate-180" : "",
+                  )}
+                />
+              </button>
+
+              {mobileServicesOpen ? (
+                <div className="ml-2 grid gap-1 border-l border-slate-700 pl-3">
+                  <Link
+                    href="/services"
+                    onClick={() => setMobileMenuOpen(false)}
+                    className="rounded-md px-3 py-2 text-sm text-cyan-200 hover:bg-slate-800"
+                  >
+                    {copy.sections.servicesMenuViewAll}
+                  </Link>
+                  {services.map((service) => (
+                    <Link
+                      key={service.slug}
+                      href={`/services/${service.slug}`}
+                      onClick={() => setMobileMenuOpen(false)}
+                      className="rounded-md px-3 py-2 text-sm text-slate-200 hover:bg-slate-800"
+                    >
+                      {service.menuLabel}
+                    </Link>
+                  ))}
+                </div>
+              ) : null}
+
+              {topLinks
+                .filter((link) => link.key !== "home")
+                .map((link) => (
+                  <Link
+                    key={link.key}
+                    href={link.href}
+                    onClick={() => setMobileMenuOpen(false)}
+                    className={cn(
+                      "rounded-md px-3 py-2 text-sm font-medium transition",
+                      active === link.key
+                        ? "bg-cyan-700 text-cyan-50"
+                        : "text-slate-200 hover:bg-slate-800",
+                    )}
+                  >
+                    {copy.nav[link.key]}
+                  </Link>
+                ))}
+            </div>
+          </aside>
+        </div>
+      ) : null}
 
       <main className="mx-auto w-full max-w-6xl px-4 py-12 md:px-6">{children}</main>
 

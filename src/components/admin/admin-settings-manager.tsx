@@ -24,6 +24,7 @@ import {
   FiSettings,
   FiShield,
   FiToggleLeft,
+  FiUpload,
 } from "react-icons/fi";
 import { SectionCard } from "@/components/admin/section-card";
 import { Button } from "@/components/ui/button";
@@ -39,6 +40,11 @@ import { siteSettingsSchema, type SiteSettings } from "@/lib/site-settings/schem
 
 type SaveState = "idle" | "saving" | "success" | "error";
 type SettingsSection = keyof SiteSettings;
+type UploadFieldPath =
+  | "branding.logoUrl"
+  | "branding.faviconUrl"
+  | "branding.ogImageUrl"
+  | "homepage.backgroundImageUrl";
 
 const SETTINGS_SECTIONS: Array<{
   key: SettingsSection;
@@ -109,6 +115,71 @@ function Field({
     <div className="grid gap-2">
       <Label htmlFor={htmlFor}>{label}</Label>
       {children}
+    </div>
+  );
+}
+
+function ImageAssetField({
+  label,
+  htmlFor,
+  fileInputId,
+  value,
+  uploading,
+  onUrlChange,
+  onUpload,
+}: {
+  label: string;
+  htmlFor: string;
+  fileInputId: string;
+  value: string;
+  uploading: boolean;
+  onUrlChange: (value: string) => void;
+  onUpload: (file: File | null) => void;
+}) {
+  return (
+    <div className="grid gap-2">
+      <Label htmlFor={htmlFor}>{label}</Label>
+      <div className="grid gap-2 md:grid-cols-[1fr_auto]">
+        <Input
+          id={htmlFor}
+          placeholder="https://..."
+          value={value}
+          onChange={(event) => onUrlChange(event.target.value)}
+        />
+        <div className="flex items-center">
+          <input
+            id={fileInputId}
+            type="file"
+            accept="image/*"
+            className="sr-only"
+            onChange={(event) => {
+              const file = event.target.files?.[0] ?? null;
+              onUpload(file);
+              event.target.value = "";
+            }}
+          />
+          <label
+            htmlFor={fileInputId}
+            className="inline-flex h-9 cursor-pointer items-center gap-2 rounded-md border border-input bg-background/80 px-3 text-sm font-medium shadow-xs transition-colors hover:bg-accent hover:text-accent-foreground"
+          >
+            {uploading ? <FiLoader className="size-4 animate-spin" /> : <FiUpload className="size-4" />}
+            {uploading ? "Uploading..." : "Upload"}
+          </label>
+        </div>
+      </div>
+      {value ? (
+        <div className="overflow-hidden rounded-md border border-slate-200/80 bg-slate-100/70 dark:border-slate-700 dark:bg-slate-900/70">
+          {/* External/admin-provided URLs may come from multiple hosts (Blob/custom CDN). */}
+          {/* eslint-disable-next-line @next/next/no-img-element */}
+          <img
+            src={value}
+            alt={`${label} preview`}
+            className="h-32 w-full object-cover"
+            loading="lazy"
+          />
+        </div>
+      ) : null}
+      <p className="text-xs text-muted-foreground">Accepted formats: image files up to 10MB.</p>
     </div>
   );
 }
@@ -190,6 +261,7 @@ export function AdminSettingsManager({
   const [feedback, setFeedback] = useState("");
   const [validationErrors, setValidationErrors] = useState<string[]>([]);
   const [lastSavedAt, setLastSavedAt] = useState<string | null>(null);
+  const [uploadingField, setUploadingField] = useState<UploadFieldPath | null>(null);
 
   const saveBadge = useMemo(() => {
     if (saveState === "saving") return <Badge variant="secondary">Saving...</Badge>;
@@ -217,6 +289,59 @@ export function AdminSettingsManager({
       .map((part) => part.trim())
       .filter(Boolean);
     updateSection("seo", { keywords });
+  };
+
+  const handleImageUpload = async <
+    S extends "branding" | "homepage",
+    K extends keyof SiteSettings[S] & string,
+  >({
+    section,
+    key,
+    fieldPath,
+    file,
+  }: {
+    section: S;
+    key: K;
+    fieldPath: UploadFieldPath;
+    file: File | null;
+  }) => {
+    if (!file) {
+      return;
+    }
+
+    setUploadingField(fieldPath);
+    setValidationErrors([]);
+
+    try {
+      const formData = new FormData();
+      formData.append("field", fieldPath);
+      formData.append("file", file);
+
+      const response = await fetch("/api/admin/media/upload", {
+        method: "POST",
+        body: formData,
+      });
+
+      const result = (await response.json()) as
+        | { ok: true; data: { url: string; pathname: string } }
+        | { ok: false; error?: string };
+
+      if (!response.ok || !result.ok) {
+        setSaveState("error");
+        setFeedback(!result.ok && result.error ? result.error : "Image upload failed.");
+        return;
+      }
+
+      const uploadedUrl = result.data.url;
+      updateSection(section, { [key]: uploadedUrl } as Partial<SiteSettings[S]>);
+      setSaveState("idle");
+      setFeedback("Image uploaded. Click Save to persist this change.");
+    } catch {
+      setSaveState("error");
+      setFeedback("Network or server error while uploading image.");
+    } finally {
+      setUploadingField(null);
+    }
   };
 
   const handleSave = async () => {
@@ -407,9 +532,51 @@ export function AdminSettingsManager({
             <TabsContent value="branding">
               <SectionCard {...SECTION_CONTENT.branding}>
                 <div className="grid gap-4">
-                  <Field label="Logo URL" htmlFor="branding-logo"><Input id="branding-logo" placeholder="https://..." value={settings.branding.logoUrl} onChange={(event) => updateSection("branding", { logoUrl: event.target.value })} /></Field>
-                  <Field label="Favicon URL" htmlFor="branding-favicon"><Input id="branding-favicon" placeholder="https://..." value={settings.branding.faviconUrl} onChange={(event) => updateSection("branding", { faviconUrl: event.target.value })} /></Field>
-                  <Field label="Open Graph Image URL" htmlFor="branding-og-image"><Input id="branding-og-image" placeholder="https://..." value={settings.branding.ogImageUrl} onChange={(event) => updateSection("branding", { ogImageUrl: event.target.value })} /></Field>
+                  <ImageAssetField
+                    label="Logo URL"
+                    htmlFor="branding-logo"
+                    fileInputId="branding-logo-file"
+                    value={settings.branding.logoUrl}
+                    uploading={uploadingField === "branding.logoUrl"}
+                    onUrlChange={(value) => updateSection("branding", { logoUrl: value })}
+                    onUpload={(file) =>
+                      void handleImageUpload({
+                        section: "branding",
+                        key: "logoUrl",
+                        fieldPath: "branding.logoUrl",
+                        file,
+                      })}
+                  />
+                  <ImageAssetField
+                    label="Favicon URL"
+                    htmlFor="branding-favicon"
+                    fileInputId="branding-favicon-file"
+                    value={settings.branding.faviconUrl}
+                    uploading={uploadingField === "branding.faviconUrl"}
+                    onUrlChange={(value) => updateSection("branding", { faviconUrl: value })}
+                    onUpload={(file) =>
+                      void handleImageUpload({
+                        section: "branding",
+                        key: "faviconUrl",
+                        fieldPath: "branding.faviconUrl",
+                        file,
+                      })}
+                  />
+                  <ImageAssetField
+                    label="Open Graph Image URL"
+                    htmlFor="branding-og-image"
+                    fileInputId="branding-og-image-file"
+                    value={settings.branding.ogImageUrl}
+                    uploading={uploadingField === "branding.ogImageUrl"}
+                    onUrlChange={(value) => updateSection("branding", { ogImageUrl: value })}
+                    onUpload={(file) =>
+                      void handleImageUpload({
+                        section: "branding",
+                        key: "ogImageUrl",
+                        fieldPath: "branding.ogImageUrl",
+                        file,
+                      })}
+                  />
                 </div>
               </SectionCard>
             </TabsContent>
@@ -423,7 +590,21 @@ export function AdminSettingsManager({
                     <Field label="CTA Text" htmlFor="homepage-cta-text"><Input id="homepage-cta-text" value={settings.homepage.ctaText} onChange={(event) => updateSection("homepage", { ctaText: event.target.value })} /></Field>
                     <Field label="CTA Link" htmlFor="homepage-cta-link"><Input id="homepage-cta-link" value={settings.homepage.ctaLink} onChange={(event) => updateSection("homepage", { ctaLink: event.target.value })} /></Field>
                   </div>
-                  <Field label="Background Image URL" htmlFor="homepage-bg-image"><Input id="homepage-bg-image" placeholder="https://..." value={settings.homepage.backgroundImageUrl} onChange={(event) => updateSection("homepage", { backgroundImageUrl: event.target.value })} /></Field>
+                  <ImageAssetField
+                    label="Background Image URL"
+                    htmlFor="homepage-bg-image"
+                    fileInputId="homepage-bg-image-file"
+                    value={settings.homepage.backgroundImageUrl}
+                    uploading={uploadingField === "homepage.backgroundImageUrl"}
+                    onUrlChange={(value) => updateSection("homepage", { backgroundImageUrl: value })}
+                    onUpload={(file) =>
+                      void handleImageUpload({
+                        section: "homepage",
+                        key: "backgroundImageUrl",
+                        fieldPath: "homepage.backgroundImageUrl",
+                        file,
+                      })}
+                  />
                 </div>
               </SectionCard>
             </TabsContent>

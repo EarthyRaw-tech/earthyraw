@@ -58,7 +58,6 @@ export function SiteControls() {
   const { resolvedTheme, setTheme } = useTheme();
   const { language, setLanguage } = useSitePreferences();
   const copy = uiCopy[language];
-  const isDark = resolvedTheme === "dark";
   const [overlayCode, setOverlayCode] = useState<"EN" | "ES" | null>(null);
   const overlayTimerRef = useRef<number | null>(null);
 
@@ -98,12 +97,12 @@ export function SiteControls() {
 
         <span className="h-4 w-px bg-slate-300/80 dark:bg-slate-600/80" />
         <IconToggleButton
-          active={isDark}
-          onClick={() => setTheme(isDark ? "light" : "dark")}
-          ariaLabel={`${copy.sections.theme}: ${isDark ? copy.sections.dark : copy.sections.light}`}
-          title={`${copy.sections.theme}: ${isDark ? copy.sections.dark : copy.sections.light}`}
+          onClick={() => setTheme(resolvedTheme === "dark" ? "light" : "dark")}
+          ariaLabel={copy.sections.theme}
+          title={copy.sections.theme}
         >
-          {isDark ? <FiSun className="size-3.5" /> : <FiMoon className="size-3.5" />}
+          <FiMoon className="size-3.5 dark:hidden" />
+          <FiSun className="hidden size-3.5 dark:block" />
         </IconToggleButton>
       </div>
 

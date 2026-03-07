@@ -1,7 +1,6 @@
-import { appendFile, mkdir } from "node:fs/promises";
-import { join } from "node:path";
 import { NextRequest, NextResponse } from "next/server";
 import { buildContactConfirmationEmail } from "@/lib/contact-email-template";
+import { saveContactSubmission } from "@/lib/contact-submissions";
 import { sendEmail } from "@/lib/email";
 import { getSiteSettings } from "@/lib/site-settings/store";
 
@@ -117,13 +116,7 @@ export async function POST(request: NextRequest) {
   };
 
   try {
-    const dataDir = join(process.cwd(), "data");
-    await mkdir(dataDir, { recursive: true });
-    await appendFile(
-      join(dataDir, "contact-submissions.ndjson"),
-      `${JSON.stringify(record)}\n`,
-      "utf8",
-    );
+    await saveContactSubmission(record);
   } catch (error) {
     console.error("Could not persist contact submission", error);
   }

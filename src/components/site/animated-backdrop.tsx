@@ -1,7 +1,6 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { useTheme } from "next-themes";
 import { useSitePreferences } from "@/components/providers/site-preferences-provider";
 
 const BACKDROP_CANDIDATES = [
@@ -15,7 +14,6 @@ function clamp(value: number, min: number, max: number) {
 
 export function AnimatedBackdrop() {
   const { motion } = useSitePreferences();
-  const { resolvedTheme } = useTheme();
   const [progress, setProgress] = useState(0);
   const [backdropImages, setBackdropImages] = useState<string[]>([]);
 
@@ -116,30 +114,30 @@ export function AnimatedBackdrop() {
     };
   }, []);
 
-  const isDark = resolvedTheme === "dark";
+  const safeProgress = progress;
   const hasBackdrop = primaryBackdrop.length > 0;
   const motionMultiplier =
     motion === "subtle" ? 0.6 : motion === "strong" ? 1.35 : 1;
   const speedMultiplier = motion === "subtle" ? 1.4 : motion === "strong" ? 0.75 : 1;
   const baseImageOpacity = hasBackdrop
-    ? (0.64 + progress * (0.24 * motionMultiplier)) * (isDark ? 0.7 : 0.95)
+    ? 0.6 + safeProgress * (0.22 * motionMultiplier)
     : 0;
-  const imageBlendProgress = clamp((progress - 0.18) / 0.62, 0, 1);
+  const imageBlendProgress = clamp((safeProgress - 0.18) / 0.62, 0, 1);
   const primaryImageOpacity = secondaryBackdrop
     ? baseImageOpacity * (1 - imageBlendProgress)
     : baseImageOpacity;
   const secondaryImageOpacity = secondaryBackdrop
     ? baseImageOpacity * imageBlendProgress
     : 0;
-  const imageShiftY = progress * (motion === "subtle" ? 14 : motion === "strong" ? 42 : 26);
-  const imageScale = 1 + progress * (0.06 * motionMultiplier);
-  const shadeOverlayOpacity = hasBackdrop ? (isDark ? 0.52 : 0.2) : isDark ? 0.74 : 0.4;
+  const imageShiftY = safeProgress * (motion === "subtle" ? 14 : motion === "strong" ? 42 : 26);
+  const imageScale = 1 + safeProgress * (0.06 * motionMultiplier);
+  const shadeOverlayOpacity = hasBackdrop ? 0.34 : 0.56;
   const primaryOpacity = hasBackdrop
-    ? (0.42 - progress * (0.2 * motionMultiplier)) * (isDark ? 0.72 : 0.78)
-    : (0.82 - progress * (0.45 * motionMultiplier)) * (isDark ? 0.35 : 1);
+    ? 0.24 - safeProgress * (0.1 * motionMultiplier)
+    : 0.72 - safeProgress * (0.38 * motionMultiplier);
   const secondaryOpacity = hasBackdrop
-    ? (0.12 + progress * (0.24 * motionMultiplier)) * (isDark ? 0.7 : 0.65)
-    : (0.2 + progress * (0.62 * motionMultiplier)) * (isDark ? 0.55 : 1);
+    ? 0.14 + safeProgress * (0.2 * motionMultiplier)
+    : 0.2 + safeProgress * (0.54 * motionMultiplier);
 
   return (
     <div className="pointer-events-none fixed inset-0 -z-10 overflow-hidden">
@@ -174,9 +172,15 @@ export function AnimatedBackdrop() {
         style={{
           opacity: primaryOpacity,
           background:
-            isDark
-              ? "radial-gradient(80rem 35rem at 15% 0%, rgba(34,211,238,0.20), transparent), radial-gradient(55rem 30rem at 85% 10%, rgba(59,130,246,0.16), transparent), linear-gradient(180deg, #020617 0%, #0f172a 45%, #111827 100%)"
-              : "radial-gradient(80rem 35rem at 15% 0%, rgba(34,211,238,0.25), transparent), radial-gradient(55rem 30rem at 85% 10%, rgba(59,130,246,0.16), transparent), linear-gradient(180deg, #f8fdff 0%, #eff9ff 45%, #f8fafc 100%)",
+            "radial-gradient(80rem 35rem at 15% 0%, rgba(34,211,238,0.25), transparent), radial-gradient(55rem 30rem at 85% 10%, rgba(59,130,246,0.16), transparent), linear-gradient(180deg, #f8fdff 0%, #eff9ff 45%, #f8fafc 100%)",
+        }}
+      />
+      <div
+        className="absolute inset-0 hidden transition-opacity duration-700 dark:block"
+        style={{
+          opacity: primaryOpacity,
+          background:
+            "radial-gradient(80rem 35rem at 15% 0%, rgba(34,211,238,0.20), transparent), radial-gradient(55rem 30rem at 85% 10%, rgba(59,130,246,0.16), transparent), linear-gradient(180deg, #020617 0%, #0f172a 45%, #111827 100%)",
         }}
       />
       <div
@@ -184,30 +188,36 @@ export function AnimatedBackdrop() {
         style={{
           opacity: secondaryOpacity,
           background:
-            isDark
-              ? "radial-gradient(65rem 28rem at 50% 95%, rgba(14,165,233,0.30), transparent), radial-gradient(50rem 28rem at 5% 80%, rgba(22,163,74,0.14), transparent)"
-              : "radial-gradient(65rem 28rem at 50% 95%, rgba(14,165,233,0.20), transparent), radial-gradient(50rem 28rem at 5% 80%, rgba(22,163,74,0.14), transparent)",
+            "radial-gradient(65rem 28rem at 50% 95%, rgba(14,165,233,0.20), transparent), radial-gradient(50rem 28rem at 5% 80%, rgba(22,163,74,0.14), transparent)",
+        }}
+      />
+      <div
+        className="absolute inset-0 hidden transition-opacity duration-700 dark:block"
+        style={{
+          opacity: secondaryOpacity,
+          background:
+            "radial-gradient(65rem 28rem at 50% 95%, rgba(14,165,233,0.30), transparent), radial-gradient(50rem 28rem at 5% 80%, rgba(22,163,74,0.14), transparent)",
         }}
       />
 
       <div
         className="absolute -left-28 top-16 size-[28rem] rounded-full bg-cyan-300/30 blur-3xl animate-drift-slow"
         style={{
-          opacity: 0.16 + progress * (0.18 * motionMultiplier),
+          opacity: 0.16 + safeProgress * (0.18 * motionMultiplier),
           animationDuration: `${20 * speedMultiplier}s`,
         }}
       />
       <div
         className="absolute -right-32 top-24 size-[30rem] rounded-full bg-sky-400/25 blur-3xl animate-drift-reverse"
         style={{
-          opacity: 0.2 + progress * (0.16 * motionMultiplier),
+          opacity: 0.2 + safeProgress * (0.16 * motionMultiplier),
           animationDuration: `${24 * speedMultiplier}s`,
         }}
       />
       <div
         className="absolute bottom-[-8rem] left-1/3 size-[25rem] rounded-full bg-teal-300/20 blur-3xl animate-drift-slow"
         style={{
-          opacity: 0.08 + progress * (0.32 * motionMultiplier),
+          opacity: 0.08 + safeProgress * (0.32 * motionMultiplier),
           animationDuration: `${18 * speedMultiplier}s`,
         }}
       />
