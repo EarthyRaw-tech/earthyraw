@@ -6,8 +6,11 @@ This repo is maintained under strict change-control. All agents must follow thes
 ---
 
 ## 0) Approval Gate (MANDATORY)
-- Do not make *any* changes until the user explicitly approves implementation with the phrase:
+- Do not make file/code changes until the user explicitly approves implementation with the phrase:
   **"approve to code"**
+- Do not perform Git actions unless the user explicitly says:
+  **"giteo"**
+- If the user says **"giteo approve to code"**, both Git actions and file/code implementation are authorized.
 - Close variants count only if the user’s intent is unmistakable.
 - If uncertain, ask for confirmation and do not proceed.
 
@@ -178,11 +181,12 @@ MVP does **not** automatically include:
 
 ## 3) Work / Branch Workflow (If Using Git)
 
-### Git Commands = Recommendations Only (User-Controlled Git) — MANDATORY
-- The agent must **NEVER** run Git commands or perform Git actions.
-- The agent may only **recommend** Git commands and explain what each command does.
-- The **user** is the only one who executes Git commands.
-- The agent must **never**: commit, push, merge, rebase, tag, cherry-pick, stash, reset, revert, or force-push.
+### Git Commands = Agent-Executable with User Approval - MANDATORY
+- The agent may **recommend** Git commands and explain what each command does.
+- The agent may execute Git commands only when the user explicitly says **"giteo"**.
+- Without **"giteo"**, the agent must not run Git commands or perform Git actions.
+- **"giteo"** authorizes Git actions only; file/code changes still require **"approve to code"**.
+- If the user says **"giteo approve to code"**, both Git and code actions are authorized.
 
 ### Default Branch Model (adjust to repo reality)
 - `main` or `master` = stable / production-ready only
@@ -194,7 +198,7 @@ MVP does **not** automatically include:
 - Normal work happens on `feature/*` branches created from `dev`.
 - `main/master` is updated only from `dev` after `dev` is verified.
 
-### Recommended Commands (User Executes)
+### Recommended Commands (User Executes, or Agent with `giteo`)
 **Update local main/master:**
 - `git fetch origin`
 - `git switch main` (or `master`)
@@ -231,10 +235,10 @@ MVP does **not** automatically include:
 
 ## 4) Commit / PR Discipline (If Using Git)
 
-### User-Controlled Git — MANDATORY
-- The agent must **never** commit, push, merge, rebase, or tag.
-- The agent may only **recommend** commit messages and Git steps.
-- The user executes all Git operations.
+### Git Execution Policy - MANDATORY
+- The agent must not commit, push, merge, rebase, or tag unless the user explicitly says **"giteo"**.
+- The agent may recommend commit messages and Git steps.
+- Without **"giteo"**, the user executes all Git operations.
 
 ### Conventional Commits (Preferred)
 - Use:
