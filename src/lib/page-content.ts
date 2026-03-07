@@ -1,6 +1,7 @@
 import { readFileSync } from "node:fs";
 import { join } from "node:path";
 import type { Metadata } from "next";
+import { buildNoIndexMetadata } from "@/lib/seo";
 
 type PageKey = "home" | "legacyHome" | "legacyLatest";
 
@@ -21,18 +22,18 @@ const PAGE_CONFIG: Record<
   legacyHome: {
     htmlPath: "src/content/legacy_site.html",
     cssPath: "src/content/legacy_site.css",
-    metadata: {
-      title: "Earthy Raw Technologies - Legacy Home",
-      description: "Legacy copy of the original Earthy Raw homepage.",
-    },
+    metadata: buildNoIndexMetadata(
+      "Earthy Raw Technologies - Legacy Home",
+      "Legacy copy of the original Earthy Raw homepage.",
+    ),
   },
   legacyLatest: {
     htmlPath: "src/content/legacy_latest.html",
     cssPath: "src/content/legacy_latest.css",
-    metadata: {
-      title: "Earthy Raw Technologies - Legacy Latest",
-      description: "Legacy copy of the latest Earthy Raw variation.",
-    },
+    metadata: buildNoIndexMetadata(
+      "Earthy Raw Technologies - Legacy Latest",
+      "Legacy copy of the latest Earthy Raw variation.",
+    ),
   },
 };
 

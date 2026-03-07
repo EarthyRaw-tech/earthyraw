@@ -1,13 +1,17 @@
 import type { Metadata } from "next";
 import { ContactPageContent } from "@/components/pages/contact-page-content";
+import { buildPublicMetadata } from "@/lib/seo";
 import { contactPage } from "@/lib/site-content";
 import { getSiteSettings } from "@/lib/site-settings/store";
 
-export const dynamic = "force-dynamic";
+export const revalidate = 300;
 
 export const metadata: Metadata = {
-  title: contactPage.seoTitle,
-  description: contactPage.metaDescription,
+  ...buildPublicMetadata({
+    title: contactPage.seoTitle,
+    description: contactPage.metaDescription,
+    path: "/contact",
+  }),
 };
 
 export default async function ContactPage() {

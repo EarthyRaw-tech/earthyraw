@@ -1,13 +1,17 @@
 import type { Metadata } from "next";
 import { StandardPageContent } from "@/components/pages/standard-page-content";
+import { buildPublicMetadata } from "@/lib/seo";
 import { aboutPage } from "@/lib/site-content";
 import { getSiteSettings } from "@/lib/site-settings/store";
 
-export const dynamic = "force-dynamic";
+export const revalidate = 300;
 
 export const metadata: Metadata = {
-  title: aboutPage.seoTitle,
-  description: aboutPage.metaDescription,
+  ...buildPublicMetadata({
+    title: aboutPage.seoTitle,
+    description: aboutPage.metaDescription,
+    path: "/about",
+  }),
 };
 
 export default async function AboutPage() {

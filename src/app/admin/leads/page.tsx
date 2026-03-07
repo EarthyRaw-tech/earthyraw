@@ -1,3 +1,4 @@
+import type { Metadata } from "next";
 import Link from "next/link";
 import { redirect } from "next/navigation";
 import {
@@ -13,15 +14,16 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { ResendConfirmationButton } from "@/components/admin/resend-confirmation-button";
+import { buildNoIndexMetadata } from "@/lib/seo";
 import { isAdminAuthenticated } from "@/lib/admin-auth";
 import { getContactSubmissions } from "@/lib/contact-submissions";
 
 export const dynamic = "force-dynamic";
 
-export const metadata = {
-  title: "Admin Leads",
-  description: "Submitted contact requests and lead intake records.",
-};
+export const metadata: Metadata = buildNoIndexMetadata(
+  "Admin Leads",
+  "Submitted contact requests and lead intake records.",
+);
 
 function formatDate(value: string) {
   if (!value) return "Unknown";

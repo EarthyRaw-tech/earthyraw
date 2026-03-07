@@ -63,6 +63,9 @@ npm run backfill:supabase
 - `SUPABASE_URL`
 - `SUPABASE_SERVICE_ROLE_KEY`
 - `BLOB_READ_WRITE_TOKEN`
+- `NEXT_PUBLIC_SITE_URL` (optional canonical/SEO fallback base URL)
+- `NEXT_PUBLIC_GOOGLE_SITE_VERIFICATION` (optional Search Console token)
+- `NEXT_PUBLIC_BING_SITE_VERIFICATION` (optional Bing Webmaster token)
 
 ## Admin routes
 
