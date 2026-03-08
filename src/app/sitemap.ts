@@ -1,3 +1,4 @@
+import { automationAudiencePages } from "@/lib/automation-audience-pages";
 import type { MetadataRoute } from "next";
 import { getCanonicalOrigin } from "@/lib/seo";
 import { servicePages } from "@/lib/site-content";
@@ -7,6 +8,8 @@ const STATIC_PUBLIC_PATHS = [
   "/",
   "/about",
   "/services",
+  "/automatizacion-de-procesos-puerto-rico",
+  "/process-automation-puerto-rico",
   "/process",
   "/pricing",
   "/faq",
@@ -20,9 +23,14 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     return [];
   }
 
+  const audiencePaths = automationAudiencePages.flatMap((item) => [
+    `/process-automation-puerto-rico/${item.slug}`,
+    `/automatizacion-de-procesos-puerto-rico/${item.slug}`,
+  ]);
+
   const now = new Date();
 
-  const staticPages: MetadataRoute.Sitemap = STATIC_PUBLIC_PATHS.map((path) => ({
+  const staticPages: MetadataRoute.Sitemap = [...STATIC_PUBLIC_PATHS, ...audiencePaths].map((path) => ({
     url: `${canonicalOrigin}${path}`,
     lastModified: now,
     changeFrequency: path === "/" ? "daily" : "weekly",

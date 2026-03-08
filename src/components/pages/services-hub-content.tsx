@@ -115,6 +115,54 @@ export function ServicesHubContent({ siteSettings }: { siteSettings: SiteSetting
       </section>
 
       <Reveal>
+        <section className="mt-6">
+          <Link
+            href="/automatizacion-de-procesos-puerto-rico"
+            className="group block rounded-2xl border border-cyan-200 bg-cyan-50/72 p-5 shadow-sm backdrop-blur-sm transition hover:-translate-y-0.5 hover:border-cyan-300 hover:shadow-md dark:border-cyan-900/50 dark:bg-cyan-900/24"
+          >
+            <h2 className="text-lg font-semibold text-cyan-900 dark:text-cyan-100">
+              {language === "es"
+                ? "Automatizacion de procesos en Puerto Rico"
+                : "Process Automation in Puerto Rico"}
+            </h2>
+            <p className="mt-2 text-sm text-cyan-900/90 dark:text-cyan-100/85">
+              {language === "es"
+                ? "Pagina dedicada para empresas que buscan mejorar productividad con automatizacion."
+                : "Dedicated page for teams looking to improve productivity through automation."}
+            </p>
+            <p className="mt-3 inline-flex items-center gap-2 text-sm font-medium text-cyan-800 dark:text-cyan-200">
+              {language === "es" ? "Ver pagina dedicada" : "View dedicated page"}
+              <FiArrowRight className="size-4" />
+            </p>
+          </Link>
+        </section>
+      </Reveal>
+
+      <Reveal>
+        <section className="mt-4">
+          <Link
+            href="/process-automation-puerto-rico"
+            className="group block rounded-2xl border border-cyan-200 bg-cyan-50/72 p-5 shadow-sm backdrop-blur-sm transition hover:-translate-y-0.5 hover:border-cyan-300 hover:shadow-md dark:border-cyan-900/50 dark:bg-cyan-900/24"
+          >
+            <h2 className="text-lg font-semibold text-cyan-900 dark:text-cyan-100">
+              {language === "es"
+                ? "Process automation Puerto Rico"
+                : "Business process automation Puerto Rico"}
+            </h2>
+            <p className="mt-2 text-sm text-cyan-900/90 dark:text-cyan-100/85">
+              {language === "es"
+                ? "Pagina dedicada en ingles para captar busquedas internacionales."
+                : "Dedicated English page targeting process automation searches in Puerto Rico."}
+            </p>
+            <p className="mt-3 inline-flex items-center gap-2 text-sm font-medium text-cyan-800 dark:text-cyan-200">
+              {language === "es" ? "View English page" : "View dedicated page"}
+              <FiArrowRight className="size-4" />
+            </p>
+          </Link>
+        </section>
+      </Reveal>
+
+      <Reveal>
         <section className="mt-10 rounded-2xl border border-cyan-100 bg-cyan-50/74 p-6 backdrop-blur-sm dark:border-cyan-900/50 dark:bg-cyan-900/24">
           <h2 className="text-xl font-semibold text-cyan-900 dark:text-cyan-100">
             {copy.actions.startAssessment}
